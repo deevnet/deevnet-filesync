@@ -8,12 +8,24 @@ bookCollapseSection: false
 
 **Status:** Draft. Requirements gathering in progress.
 
-This page captures what Deevnet FileSync must do. Requirements carry a short ID (e.g. `SYNC-3`) so
-the project plan can trace phases back to them, and a priority:
+This page holds the **core** requirements: the ones that apply everywhere. Detail lives on
+sub-pages:
 
-- **MVP**: required for the first usable release.
-- **Later**: planned, but not in the first release.
+| Page | Covers |
+|---|---|
+| [Metadata Matrix](metadata/) | Names, timestamps, permissions, and file types across platforms |
+| [Clients](clients/) | Requirements common to every client, plus one page per platform: [Linux](clients/linux/), [Windows](clients/windows/), [macOS](clients/macos/), [Android](clients/android/) |
+| [Cloud Hub](hub/) | The storage backend: AWS S3 for the MVP, the backend interface, access control, cost |
+
+Requirements carry a short ID (e.g. `SYNC-3`) so the [Roadmap](../roadmap/) can trace phases back
+to them, and a priority:
+
+- **MVP**: required for the first usable release (Linux).
+- **Phase N**: required when that platform's phase ships.
+- **Later**: planned, but not yet assigned to a phase.
 - **Non-goal**: deliberately out of scope.
+
+Items marked *proposed* were suggested during drafting and are awaiting confirmation.
 
 ## Vision
 
@@ -57,10 +69,10 @@ provider never sees file contents, file names, or the user's identity.
 ### Platforms
 Platforms arrive in this order: **Linux → Windows → macOS → Android** (see [Roadmap](../roadmap/)).
 
-- **PLT-1 (MVP):** Linux.
-- **PLT-2 (Later):** Windows.
-- **PLT-3 (Later):** macOS.
-- **PLT-4 (Later):** Android.
+- **PLT-1 (MVP):** [Linux](clients/linux/).
+- **PLT-2 (Phase 4):** [Windows](clients/windows/).
+- **PLT-3 (Phase 5):** [macOS](clients/macos/).
+- **PLT-4 (Phase 6):** [Android](clients/android/).
 - **PLT-5 (Later, maybe):** iOS / iPadOS. The design should not rule this out.
 - **PLT-6 (MVP):** The core is cross-platform from the start. Platform-specific code lives in
   thin shells, so a new platform does not need a rewrite.
@@ -96,6 +108,13 @@ Platforms arrive in this order: **Linux → Windows → macOS → Android** (see
 - **ROOT-4 (Later):** Selective sync of subfolders within a root.
 - **ROOT-5 (MVP):** Unmounting a root on a device stops syncing it and leaves the local files in
   place. Local files are never deleted as a side effect of unmounting.
+- **ROOT-6 (MVP, proposed):** The client puts nothing of its own inside a mounted root: no hidden
+  `.filesync` folders, no marker files. All configuration and state live outside the roots.
+  (Conflict copies are user files, so they are the exception.)
+- **ROOT-7 (MVP, proposed):** Roots on a device cannot be nested or overlap each other.
+- **ROOT-8 (MVP, proposed):** The client warns when a root is inside a folder that another sync
+  product manages (e.g. OneDrive, iCloud Drive, Dropbox), since two sync engines on the same
+  files fight each other.
 
 ### Sync behavior
 - **SYNC-1 (MVP):** Every mounting device keeps a full local copy of the root. No placeholder,
@@ -142,8 +161,8 @@ Platforms arrive in this order: **Linux → Windows → macOS → Android** (see
   can override.
 
 ### File metadata
-The per-platform capability matrix and the proposals behind these requirements are on the
-[Metadata Matrix](metadata/) page.
+Summary only. The per-platform capability matrix and the reasoning behind these requirements are on
+the [Metadata Matrix](metadata/) page.
 
 - **META-1 (MVP):** File contents (byte-exact) and modification time are preserved.
 - **META-2 (MVP):** Empty directories are synced.
@@ -157,32 +176,19 @@ The per-platform capability matrix and the proposals behind these requirements a
   characters and names, case-only differences, Unicode normalization differences) are detected
   and handled predictably, never silently lost or overwritten.
 
-### Backends
-- **BE-0 (MVP):** Only one backend is active at a time. That one backend is the hub.
-- **BE-1 (MVP):** AWS S3 is the MVP backend. Other S3-compatible providers (Backblaze B2,
-  Cloudflare R2, Wasabi, MinIO) are expected to fit the same interface later.
-- **BE-2 (MVP):** The backend interface is narrow and primitive (put, get, list, delete, plus
-  whatever concurrency primitive the design needs) so that new backends are cheap to add.
-- **BE-3 (Later):** Self-hosted storage (e.g. MinIO on Deevnet infrastructure, SFTP, a local or
-  NAS path).
-- **BE-4 (MVP):** Clean separation: the sync engine, crypto, and hub format do not depend on
-  anything specific to AWS. Anything AWS-specific stays inside the S3 backend adapter.
-- **BE-6 (Later):** A **data migration process** moves the hub from one backend to another
-  (e.g. AWS S3 → self-hosted) without re-uploading from every device.
-- **BE-7 (Non-goal):** Mirroring to multiple backends at the same time.
-- **BE-5 (Later):** Consumer cloud drives (Google Drive, OneDrive, Dropbox) as dumb storage.
+### Storage backend
+Summary only. Details are on the [Cloud Hub](hub/) page.
 
-### Clients and interfaces
-- **CLI-1 (MVP):** A command-line interface that exposes every capability: setup, mounts, status,
-  push now, pull now, conflicts, versions, restore.
-- **CLI-2 (MVP):** A background sync agent (daemon/service) per desktop platform that runs
-  without a user session where the OS allows it.
-- **UI-1 (Later):** A system tray app on desktop platforms that shows status and offers push now,
-  pull now, pause, and notifications.
-- **UI-2 (Later):** An Android app.
-- **AND-1 (Later):** Android sync runs only on Wi-Fi and/or while charging (user-configurable).
-- **AND-2 (TBD):** How Android exposes sync roots on the filesystem (Storage Access Framework
-  versus app-specific storage). *Discussion pending.*
+- **BE-0 (MVP):** Only one backend is active at a time. That one backend is the hub.
+- **BE-1 (MVP):** AWS S3 is the MVP backend.
+- **BE-4 (MVP):** The sync engine, crypto, and hub format do not depend on anything AWS-specific.
+
+### Clients
+Summary only. Details are on the [Clients](clients/) page and its per-platform pages.
+
+- **CLI-1 (MVP):** A CLI exposes every capability.
+- **CLI-2 (MVP):** A background sync agent runs on each desktop platform.
+- **UI-1 (Phase 4):** A tray app on desktop platforms. **UI-2 (Phase 6):** An Android app.
 
 ## Non-Functional Requirements
 
@@ -232,7 +238,7 @@ The per-platform capability matrix and the proposals behind these requirements a
 - **PERF-1 (MVP):** An idle client uses little CPU and battery. Change detection uses OS
   filesystem notifications where available, with periodic rescans as a safety net.
 - **PERF-2 (MVP):** Cost-aware against metered cloud APIs: polling frequency and request counts
-  are kept modest and configurable.
+  are kept modest and configurable (see [Cloud Hub](hub/)).
 - **PERF-3 (Later):** Content-defined chunking / deduplication so that small edits to large files
   don't re-upload the whole file.
 
@@ -249,19 +255,17 @@ The per-platform capability matrix and the proposals behind these requirements a
 
 ## Open Questions
 
-Topics that still need a deliberate discussion before they become requirements.
+Topics that still need a deliberate discussion. Detail lives on the page linked.
 
-1. **Metadata (META-3..6):** Proposals are in the [Metadata Matrix](metadata/); its
-   "Decisions needed" list is still open.
-2. **Android storage model (AND-2):** Storage Access Framework versus app-specific directories,
-   and what that means for the "no forced layout" principle.
-3. **PKI design (SEC-7, SEC-9..11):**
+1. **Metadata:** the "Decisions needed" list on the [Metadata Matrix](metadata/).
+2. **PKI design (SEC-7, SEC-9..12):**
    - How certificates bind to data encryption. Certificates prove identity and sign changes; the
      data keys are separately wrapped to each enrolled device's public key and to the offline
      recovery key.
-   - Whether an S3 credential per device is derived from the device certificate (AWS IAM Roles
-     Anywhere), or stored on the device as a scoped static key.
    - Device revocation: a signed device list in the hub, a CRL, or both.
-4. **Concurrency on a dumb hub:** How devices safely coordinate through plain S3 (AWS S3 now
-   supports conditional writes). This is mostly a design question, but it constrains which
-   providers can serve as a hub later.
+   - **Key algorithm versus hardware key storage.** To keep device keys in hardware (TPM 2.0,
+     Apple Secure Enclave, Android Keystore), the algorithm must be one that all of them support.
+     ECDSA P-256 is the common denominator; Ed25519 is not supported everywhere. This needs to be
+     decided before any device key is generated.
+3. **Hub access and concurrency:** on the [Cloud Hub](hub/) page.
+4. **Per-platform questions:** on each [client platform page](clients/).

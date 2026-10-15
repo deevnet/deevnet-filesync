@@ -38,7 +38,9 @@ Settle what to build and how, before writing code.
   recovery (SEC-3, SEC-5, SEC-7, SEC-9..11).
 - **Metadata deep dive:** a decision per metadata type and per platform (META-*).
 - **Backend interface:** the narrow storage contract (BE-2), and confirmation that AWS S3 meets
-  its concurrency needs.
+  its concurrency needs (HUB-4).
+- **Hub access model:** device credentials and protection against a compromised device
+  (HUB-6, HUB-7).
 - **Dependency policy:** what counts as a "primitive", and the initial list of crates (IND-1).
 - Repo layout, Rust workspace, CI (build, lint, test, secret scan), docs publishing. *(The docs
   publishing piece is done.)*
@@ -50,7 +52,9 @@ Settle what to build and how, before writing code.
 Prove the core: encryption, the hub format, and the backend boundary, with one device.
 
 - Rust core: local state database, filesystem scanner, hashing, and the encryption envelope.
-- AWS S3 backend behind the backend interface (BE-1, BE-2).
+- AWS S3 backend behind the backend interface (BE-1, BE-2, BE-4), with a versioned hub format
+  (HUB-1, HUB-2) and scriptable hub setup (HUB-9).
+- Linux platform basics: filesystems, key protection, packaging (LNX-1..4, LNX-9..11).
 - User CA and device identity, enough for one device (SEC-9).
 - Sync roots and mounts at arbitrary paths (ROOT-1, ROOT-2, ROOT-3, ROOT-5).
 - Ignore rules with built-in defaults (IGN-1, IGN-2).
@@ -67,8 +71,10 @@ the hub reveals no file names, contents, or structure.
 Turn it into sync.
 
 - Enroll a second device from an existing one; revoke a device (SEC-5, SEC-10).
-- Background agent as a systemd user service (CLI-2).
-- Filesystem watching plus periodic rescan (PERF-1). Changes propagate within minutes (SYNC-3).
+- Background agent as a systemd user service, controlled by the CLI (CLI-2, CLI-3, LNX-5, LNX-6).
+- Filesystem watching plus periodic rescan (PERF-1, LNX-7, LNX-8). Changes propagate within
+  minutes (SYNC-3).
+- Conditional-write coordination and per-device hub credentials (HUB-4, HUB-6).
 - Offline queueing (SYNC-6).
 - Conflict detection and conflict copies; conflicts shown in status (CONF-1, CONF-2, CONF-4).
 - Cost-aware polling of the hub (PERF-2).
@@ -84,7 +90,7 @@ Make it safe to trust with real files.
 - Version history and per-root retention policies (VER-1, VER-2).
 - Trash for deletions (VER-3).
 - List and restore file versions (VER-4).
-- Garbage collection of expired data (VER-6).
+- Garbage collection of expired data, using the privileged credential (VER-6, HUB-7).
 - Verify / scrub of local state against the hub (REL-3).
 - Recovery from the user's offline root when every device is lost (SEC-11), exercised end to end.
 - The hub format specification is finalized for v1.0 (IND-2).
@@ -94,20 +100,20 @@ succeeds. **v1.0 is released for Linux.**
 
 ## Phase 4: Windows
 
-- Windows service and client built on the shared core (PLT-2).
+- Windows agent and client built on the shared core (PLT-2, WIN-*).
 - Cross-platform naming: reserved names and characters, case-insensitivity, Unicode
   normalization (META-6).
-- System tray app on Windows, and on Linux as well (UI-1).
+- System tray app on Windows, and on Linux as well (UI-1, LNX-12, LNX-13).
 
 ## Phase 5: macOS
 
-- macOS agent (launchd) and client (PLT-3).
+- macOS agent (launchd) and client (PLT-3, MAC-*).
 - macOS-specific metadata decisions applied (META-5).
 - Tray / menu bar app (UI-1).
 
 ## Phase 6: Android
 
-- Android app built on the shared core via FFI (PLT-4, UI-2).
+- Android app built on the shared core via FFI (PLT-4, UI-2, AND-*).
 - Storage model as decided for AND-2.
 - Sync only on Wi-Fi and/or while charging (AND-1).
 
