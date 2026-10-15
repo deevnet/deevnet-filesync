@@ -55,11 +55,15 @@ provider never sees file contents, file names, or the user's identity.
 - **USR-3 (Non-goal):** Sharing files or folders with other people; public or share links.
 
 ### Platforms
+Platforms arrive in this order: **Linux → Windows → macOS → Android** (see [Roadmap](../roadmap/)).
+
 - **PLT-1 (MVP):** Linux.
-- **PLT-2 (MVP?):** Windows. *(See [Open Questions](#open-questions): phasing.)*
-- **PLT-3 (MVP?):** macOS.
+- **PLT-2 (Later):** Windows.
+- **PLT-3 (Later):** macOS.
 - **PLT-4 (Later):** Android.
 - **PLT-5 (Later, maybe):** iOS / iPadOS. The design should not rule this out.
+- **PLT-6 (MVP):** The core is cross-platform from the start. Platform-specific code lives in
+  thin shells, so a new platform does not need a rewrite.
 
 ### Workload
 - Intended for "normal user files": documents, spreadsheets, PDFs, tax software data files,
@@ -151,14 +155,18 @@ provider never sees file contents, file names, or the user's identity.
   and handled predictably, never silently lost or overwritten.
 
 ### Backends
-- **BE-1 (MVP):** An S3-compatible object storage backend (AWS S3 first; others such as Backblaze
-  B2, Cloudflare R2, Wasabi, and MinIO are expected to work through the same interface).
+- **BE-0 (MVP):** Only one backend is active at a time. That one backend is the hub.
+- **BE-1 (MVP):** AWS S3 is the MVP backend. Other S3-compatible providers (Backblaze B2,
+  Cloudflare R2, Wasabi, MinIO) are expected to fit the same interface later.
 - **BE-2 (MVP):** The backend interface is narrow and primitive (put, get, list, delete, plus
   whatever concurrency primitive the design needs) so that new backends are cheap to add.
 - **BE-3 (Later):** Self-hosted storage (e.g. MinIO on Deevnet infrastructure, SFTP, a local or
   NAS path).
-- **BE-4 (TBD):** Multiple backends at once (mirroring), and migrating between backends.
-  *Discussion pending.*
+- **BE-4 (MVP):** Clean separation: the sync engine, crypto, and hub format do not depend on
+  anything specific to AWS. Anything AWS-specific stays inside the S3 backend adapter.
+- **BE-6 (Later):** A **data migration process** moves the hub from one backend to another
+  (e.g. AWS S3 → self-hosted) without re-uploading from every device.
+- **BE-7 (Non-goal):** Mirroring to multiple backends at the same time.
 - **BE-5 (Later):** Consumer cloud drives (Google Drive, OneDrive, Dropbox) as dumb storage.
 
 ### Clients and interfaces
@@ -187,8 +195,16 @@ provider never sees file contents, file names, or the user's identity.
 - **SEC-5 (MVP):** A lost or compromised device can be revoked so that it can no longer
   access future data.
 - **SEC-6 (Later):** Key rotation and re-encryption after revocation.
-- **SEC-7 (TBD):** Key hierarchy, device enrollment, and recovery when every device is lost.
-  *Discussion pending.*
+- **SEC-7 (MVP):** Identity is PKI-based and owned by the user. *Direction agreed; detailed
+  design in Phase 0.*
+- **SEC-9 (MVP):** Each device has its own key pair, generated on the device, and a certificate
+  issued by a CA that the user controls. Devices prove who they are with certificates, not with a
+  shared passphrase.
+- **SEC-10 (MVP):** Enrolling a new device needs more than a passphrase. It needs approval from
+  an existing device, or the user's offline CA.
+- **SEC-11 (MVP):** Recovery when every device is lost uses the user's offline root (modeled on
+  the Deevnet Root of Trust: passphrase-encrypted keys on offline media). The root can issue
+  a new device certificate *and* recover access to the data keys.
 - **SEC-8 (MVP):** Only well-established, audited cryptographic primitives and libraries are
   used. No home-grown cryptography.
 
@@ -229,16 +245,18 @@ provider never sees file contents, file names, or the user's identity.
 
 Topics that still need a deliberate discussion before they become requirements.
 
-1. **Multiple backends / migration (BE-4):** Do we mirror to more than one hub? Migrate between
-   providers? Treat a backend as a replaceable hub with a documented export/import?
-2. **Key model and recovery (SEC-7):** Should there be one master key with per-device keys? How
-   is a new device enrolled (via an existing device, or passphrase only)? What is the recovery
-   path if every device is lost (printed recovery key, passphrase)?
-3. **Metadata (META-3..6):** A deliberate, cross-platform decision for each kind of metadata.
-4. **Android storage model (AND-2):** Storage Access Framework versus app-specific directories,
+1. **Metadata (META-3..6):** A deliberate, cross-platform decision for each kind of metadata.
+2. **Android storage model (AND-2):** Storage Access Framework versus app-specific directories,
    and what that means for the "no forced layout" principle.
-5. **Platform phasing:** Which desktop platforms are in the first release: Linux only, or
-   Linux, Windows and macOS together?
-6. **Concurrency on a dumb hub:** How devices safely coordinate through plain S3 (conditional
-   writes / compare-and-swap support varies between S3-compatible providers). This is mostly a
-   design question, but it may constrain which providers count as "S3-compatible enough".
+3. **PKI design (SEC-7, SEC-9..11):**
+   - Should FileSync have its own user-held root CA (a standalone product), or be issued under
+     the Deevnet PKI (e.g. a dedicated issuing CA under the Deevnet Root)?
+   - How certificates bind to data encryption. Certificates prove identity and sign changes; the
+     data keys are separately wrapped to each enrolled device's public key and to the offline
+     recovery key.
+   - Whether an S3 credential per device is derived from the device certificate (AWS IAM Roles
+     Anywhere), or stored on the device as a scoped static key.
+   - Device revocation: a signed device list in the hub, a CRL, or both.
+4. **Concurrency on a dumb hub:** How devices safely coordinate through plain S3 (AWS S3 now
+   supports conditional writes). This is mostly a design question, but it constrains which
+   providers can serve as a hub later.
