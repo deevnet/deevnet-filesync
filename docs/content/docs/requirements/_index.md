@@ -171,15 +171,19 @@ the [Metadata Matrix](metadata/) page.
 
 - **META-1 (MVP):** File contents (byte-exact) and modification time are preserved.
 - **META-2 (MVP):** Empty directories are synced.
-- **META-3 (MVP, proposed):** The executable bit and a read-only flag are synced and mapped per
-  platform. Other permissions, ownership, and ACLs are not synced.
-- **META-4 (MVP, proposed):** Symlinks, special files, and other products' cloud placeholders
-  are skipped with a warning.
-- **META-5 (MVP, proposed):** Extended attributes, alternate data streams, and resource forks are
-  not synced in v1. The format leaves room for an allow-listed set later.
-- **META-6 (MVP):** Names that are invalid or ambiguous on another platform (Windows reserved
-  characters and names, case-only differences, Unicode normalization differences) are detected
-  and handled predictably, never silently lost or overwritten.
+- **META-3 (MVP):** The executable bit is synced (applied on Linux and macOS). Other
+  permissions, the read-only flag, ownership, and ACLs are not synced.
+- **META-4 (MVP):** Symlinks, special files, and other products' cloud placeholders are skipped
+  with a warning.
+- **META-5 (MVP):** Extended attributes, alternate data streams, and resource forks are not synced
+  in v1. The format leaves room for an allow-listed set later.
+- **META-6 (MVP):** Every root uses **portable names**: valid on every platform (in practice,
+  valid on Windows) and unique after case-folding and Unicode normalization. A non-portable
+  name is flagged as soon as it appears and is not uploaded until renamed. Names are never
+  silently renamed, mangled, or merged.
+- **META-7 (Later):** A "came from the internet" flag is synced, so files downloaded on one device
+  keep Mark of the Web / quarantine protection on other Windows and macOS devices. The field is
+  reserved in the v1 hub format.
 
 ### Storage backend
 Summary only. Details are on the [Cloud Hub](hub/) page.
@@ -262,8 +266,7 @@ Summary only. Details are on the [Clients](clients/) page and its per-platform p
 
 Topics that still need a deliberate discussion. Detail lives on the page linked.
 
-1. **Metadata:** the "Decisions needed" list on the [Metadata Matrix](metadata/).
-2. **PKI design (SEC-7, SEC-9..12):**
+1. **PKI design (SEC-7, SEC-9..12):**
    - How certificates bind to data encryption. Certificates prove identity and sign changes; the
      data keys are separately wrapped to each enrolled device's public key and to the offline
      recovery key.
@@ -272,5 +275,5 @@ Topics that still need a deliberate discussion. Detail lives on the page linked.
      Apple Secure Enclave, Android Keystore), the algorithm must be one that all of them support.
      ECDSA P-256 is the common denominator; Ed25519 is not supported everywhere. This needs to be
      decided before any device key is generated.
-3. **Hub access and concurrency:** on the [Cloud Hub](hub/) page.
-4. **Per-platform questions:** on each [client platform page](clients/).
+2. **Hub access and concurrency:** on the [Cloud Hub](hub/) page.
+3. **Per-platform questions:** on each [client platform page](clients/).

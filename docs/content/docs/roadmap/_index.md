@@ -30,13 +30,14 @@ rewrite.
 
 Settle what to build and how, before writing code.
 
-- Requirements: close the open questions (metadata, key design, hub access).
+- Requirements: close the open questions (key design, hub access).
 - Architecture: components, how they fit, and the core / platform-shell boundary.
 - **Hub data format:** the on-hub layout, object naming, encryption envelope, and how devices
   coordinate through plain object storage. This is documented as a specification (IND-2).
 - **Identity and key design:** the PKI-based device identity, enrollment, revocation, and
   recovery (SEC-3, SEC-5, SEC-7, SEC-9..11).
-- **Metadata deep dive:** a decision per metadata type and per platform (META-*).
+- **Metadata deep dive:** a decision per metadata type and per platform (META-*). *(Done; see the
+  Metadata Matrix.)*
 - **Backend interface:** the narrow storage contract (BE-2), and confirmation that AWS S3 meets
   its concurrency needs (HUB-4).
 - **Hub access model:** device credentials and protection against a compromised device
@@ -62,7 +63,8 @@ Prove the core: encryption, the hub format, and the backend boundary, with one d
 - Size limits and workload guardrails (WKL-2).
 - CLI: init, mount and unmount a root, status, push now, pull now (CLI-1, SYNC-4, SYNC-5).
 - Resumable, crash-safe transfers (SYNC-7, SYNC-8, REL-2).
-- Metadata handling as decided in Phase 0 (META-1, META-2, META-6).
+- Metadata handling as decided in the Metadata Matrix (META-1..6), with the META-7 field
+  reserved in the format.
 
 **Exit:** a root pushed from one Linux device restores byte-for-byte into a fresh location, and
 the hub reveals no file names, contents, or structure.
@@ -124,6 +126,7 @@ succeeds. **v1.0 is released for Linux.**
 Not yet assigned to a phase.
 
 - Point-in-time recovery of a root or folder (VER-5).
+- "Came from the internet" flag (META-7).
 - Per-file-type conflict strategies (CONF-3).
 - Subfolder-level selective sync (ROOT-4).
 - Data migration process between backends (BE-6).
