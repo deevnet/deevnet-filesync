@@ -19,7 +19,7 @@ in each phase trace back to that page.
 | 3 | Data safety and v1.0 | Versions, trash, retention, restore. **Linux MVP release** | ⏳ |
 | 4 | Windows | Windows client and tray app | ⏳ |
 | 5 | macOS | macOS client and tray app | ⏳ |
-| 6 | Android | Android app | ⏳ |
+| 6 | Android | Read-only Android app | ⏳ |
 | — | Backlog | Later items, not yet assigned to a phase | ⏳ |
 
 Platform order is deliberate: **Linux → Windows → macOS → Android.** The Rust core stays
@@ -30,7 +30,7 @@ rewrite.
 
 Settle what to build and how, before writing code.
 
-- Requirements: close the open questions (metadata, Android storage, key design).
+- Requirements: close the open questions (metadata, key design, hub access).
 - Architecture: components, how they fit, and the core / platform-shell boundary.
 - **Hub data format:** the on-hub layout, object naming, encryption envelope, and how devices
   coordinate through plain object storage. This is documented as a specification (IND-2).
@@ -56,7 +56,8 @@ Prove the core: encryption, the hub format, and the backend boundary, with one d
   (HUB-1, HUB-2) and scriptable hub setup (HUB-9).
 - Linux platform basics: filesystems, key protection, packaging (LNX-1..4, LNX-9..11).
 - User CA and device identity, enough for one device (SEC-9).
-- Sync roots and mounts at arbitrary paths (ROOT-1, ROOT-2, ROOT-3, ROOT-5).
+- Sync roots and mounts at arbitrary paths, with no client files inside roots, no overlapping
+  roots, and warnings for roots inside other sync products (ROOT-1..3, ROOT-5..8).
 - Ignore rules with built-in defaults (IGN-1, IGN-2).
 - Size limits and workload guardrails (WKL-2).
 - CLI: init, mount and unmount a root, status, push now, pull now (CLI-1, SYNC-4, SYNC-5).
@@ -71,6 +72,7 @@ the hub reveals no file names, contents, or structure.
 Turn it into sync.
 
 - Enroll a second device from an existing one; revoke a device (SEC-5, SEC-10).
+- Receive-only mounts with read-only hub credentials (ROOT-9).
 - Background agent as a systemd user service, controlled by the CLI (CLI-2, CLI-3, LNX-5, LNX-6).
 - Filesystem watching plus periodic rescan (PERF-1, LNX-7, LNX-8). Changes propagate within
   minutes (SYNC-3).
@@ -113,9 +115,9 @@ succeeds. **v1.0 is released for Linux.**
 
 ## Phase 6: Android
 
-- Android app built on the shared core via FFI (PLT-4, UI-2, AND-*).
-- Storage model as decided for AND-2.
-- Sync only on Wi-Fi and/or while charging (AND-1).
+- Read-only Android app built on the shared core via FFI (PLT-4, UI-2, AND-10, AND-*).
+- App storage exposed to other apps through a read-only document provider (AND-2).
+- Pulls only on Wi-Fi and/or while charging (AND-1).
 
 ## Backlog
 

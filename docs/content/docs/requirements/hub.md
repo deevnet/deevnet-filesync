@@ -48,7 +48,8 @@ provider replaceable and keeps it from ever needing to understand the data.
 
 ## Access control and protection
 - **HUB-6 (MVP, proposed):** Every device has its own credential, scoped to only the FileSync
-  bucket (or prefix). Revoking a device (SEC-5) also removes its storage access.
+  bucket (or prefix). Revoking a device (SEC-5) also removes its storage access. A receive-only
+  device (ROOT-9), such as an Android phone, gets a read-only credential.
 - **HUB-7 (MVP, proposed):** **A compromised device cannot destroy the hub.** Day-to-day device
   credentials can add data but cannot permanently delete or overwrite history. Permanent
   deletion (garbage collection, VER-6) uses a separate, more privileged credential. This

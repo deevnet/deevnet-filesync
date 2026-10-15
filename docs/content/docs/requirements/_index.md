@@ -72,7 +72,8 @@ Platforms arrive in this order: **Linux → Windows → macOS → Android** (see
 - **PLT-1 (MVP):** [Linux](clients/linux/).
 - **PLT-2 (Phase 4):** [Windows](clients/windows/).
 - **PLT-3 (Phase 5):** [macOS](clients/macos/).
-- **PLT-4 (Phase 6):** [Android](clients/android/).
+- **PLT-4 (Phase 6):** [Android](clients/android/), as a **read-only** device: files never
+  originate on Android (AND-10).
 - **PLT-5 (Later, maybe):** iOS / iPadOS. The design should not rule this out.
 - **PLT-6 (MVP):** The core is cross-platform from the start. Platform-specific code lives in
   thin shells, so a new platform does not need a rewrite.
@@ -115,6 +116,10 @@ Platforms arrive in this order: **Linux → Windows → macOS → Android** (see
 - **ROOT-8 (MVP, proposed):** The client warns when a root is inside a folder that another sync
   product manages (e.g. OneDrive, iCloud Drive, Dropbox), since two sync engines on the same
   files fight each other.
+- **ROOT-9 (MVP, proposed):** A mount can be **receive-only**: the device downloads changes from
+  the hub but never uploads. A device whose mounts are all receive-only gets a read-only hub
+  credential (HUB-6). Android
+  is always receive-only (AND-10); on desktops it is an option per mount.
 
 ### Sync behavior
 - **SYNC-1 (MVP):** Every mounting device keeps a full local copy of the root. No placeholder,
@@ -188,7 +193,7 @@ Summary only. Details are on the [Clients](clients/) page and its per-platform p
 
 - **CLI-1 (MVP):** A CLI exposes every capability.
 - **CLI-2 (MVP):** A background sync agent runs on each desktop platform.
-- **UI-1 (Phase 4):** A tray app on desktop platforms. **UI-2 (Phase 6):** An Android app.
+- **UI-1 (Phase 4):** A tray app on desktop platforms. **UI-2 (Phase 6):** A read-only Android app.
 
 ## Non-Functional Requirements
 

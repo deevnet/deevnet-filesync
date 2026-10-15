@@ -76,7 +76,8 @@ normalized, case-folded form to detect collisions before they reach a device.
 - Sync decisions use **content hashes**, not timestamps. mtime is preserved for the user's
   benefit, not trusted for correctness. On Android, where mtime may not be settable, the
   client remembers the true mtime from the hub rather than assuming the filesystem has it.
-  **Fidelity loss on Android: files show the download time in other apps.**
+  Android is read-only (AND-10) and serves files through its own document provider, which
+  reports the true mtime, so there is no fidelity loss there.
 
 ## 3. Permissions and ownership
 
@@ -187,4 +188,3 @@ What one file's record in the hub carries under this proposal:
    marker on the originating device keeps that protection on the others? That would mean
    syncing the marker's *presence* as a flag. *Lean: yes, as a single "came from the internet"
    flag, Later.*
-5. **Android mtime loss:** acceptable, given that the app keeps the true value?

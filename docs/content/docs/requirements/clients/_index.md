@@ -14,7 +14,7 @@ each platform's page. Core requirements are on the [Requirements](../) page.
 | [Linux](linux/) | 1–3 (MVP) | systemd user service | inotify + rescan | Secret Service or TPM 2.0 | CLI; tray in Phase 4 |
 | [Windows](windows/) | 4 | Per-user background process | `ReadDirectoryChangesW` + rescan | TPM 2.0 / DPAPI | CLI + tray |
 | [macOS](macos/) | 5 | launchd user agent | FSEvents + rescan | Keychain / Secure Enclave | CLI + menu bar |
-| [Android](android/) | 6 | WorkManager scheduled jobs | Periodic rescan | Android Keystore | App |
+| [Android](android/) (read-only) | 6 | WorkManager scheduled pulls | Not needed: nothing originates on Android | Android Keystore | App |
 
 ## Interfaces
 - **CLI-1 (MVP):** A command-line interface exposes every capability: setup, enrollment, mounts,
@@ -27,7 +27,7 @@ each platform's page. Core requirements are on the [Requirements](../) page.
   engine.
 - **UI-1 (Phase 4):** A tray / menu bar app on desktop platforms: status, push now, pull now,
   pause, conflicts, and notifications. Linux gets it at the same time as Windows.
-- **UI-2 (Phase 6):** An Android app.
+- **UI-2 (Phase 6):** A read-only Android app (AND-10).
 
 ## Common behavior
 - **CLNT-1 (MVP, proposed):** Configuration and local state live in the platform's standard
