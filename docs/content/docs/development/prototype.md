@@ -68,13 +68,25 @@ Deevnet Root CA through the system trust store, and requests reach MinIO and are
 What's needed is a **scoped user** for a dedicated bucket. The prototype should never use MinIO's
 root credentials.
 
-With MinIO's client (`mc`), authenticated as the root user, wherever you normally administer the
-state store:
+**Where:** the tenant state store runs as the `minio` podman container on **`dv02prv001v01`**
+(the `tenant_state` group in the inventory), deployed by the `minio` role in
+`ansible-collection-deevnet.mgmt`. MinIO's client `mc` ships inside the container, and the role
+has already registered an alias, `local`, logged in as root. **You never handle the root
+credentials:** run `mc` through `podman exec`, and they stay inside the container.
+
+On `dv02prv001v01`:
 
 ```bash
-mc mb deevnet/filesync-proto
+# 0. Check the alias exists (it is lost if the container is recreated; step 0b restores it
+#    from the container's own environment, without the password ever being shown)
+sudo podman exec minio mc alias list local
+sudo podman exec minio sh -c 'mc alias set local http://127.0.0.1:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"'   # 0b, only if needed
 
-cat > filesync-proto.json <<'POLICY'
+# 1. The bucket
+sudo podman exec minio mc mb local/filesync-proto
+
+# 2. A policy allowing that bucket only
+sudo podman exec -i minio sh -c 'cat > /tmp/filesync-proto.json' <<'POLICY'
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -87,10 +99,20 @@ cat > filesync-proto.json <<'POLICY'
   ]
 }
 POLICY
-mc admin policy create deevnet filesync-proto filesync-proto.json
-mc admin user add deevnet filesync-proto '<a new secret>'
-mc admin policy attach deevnet filesync-proto --user filesync-proto
+sudo podman exec minio mc admin policy create local filesync-proto /tmp/filesync-proto.json
+
+# 3. A user with that policy. Generate the secret here; it is this user's only copy.
+SECRET=$(openssl rand -hex 20); echo "$SECRET"
+sudo podman exec minio mc admin user add local filesync-proto "$SECRET"
+sudo podman exec minio mc admin policy attach local filesync-proto --user filesync-proto
 ```
+
+The access key is `filesync-proto`, and the secret is the value printed in step 3. To keep a
+record of it, add it to the vault (for example as `vault_minio_filesync_proto_secret`).
+
+This is a hand-made change to a substrate service, outside Ansible. That's fine for a prototype,
+but if the bucket outlives Phase P, it should move into the `minio` role (or the Deevnet API's
+state-store provisioning) so the code stays the state.
 
 Then, on each device, put the credentials where only that user can read them:
 
