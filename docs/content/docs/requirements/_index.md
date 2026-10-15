@@ -142,14 +142,17 @@ Platforms arrive in this order: **Linux → Windows → macOS → Android** (see
   can override.
 
 ### File metadata
-*Deep dive pending; see [Open Questions](#open-questions).*
+The per-platform capability matrix and the proposals behind these requirements are on the
+[Metadata Matrix](metadata/) page.
 
-- **META-1 (MVP):** File contents and modification time are preserved.
+- **META-1 (MVP):** File contents (byte-exact) and modification time are preserved.
 - **META-2 (MVP):** Empty directories are synced.
-- **META-3 (TBD):** POSIX permissions / executable bit.
-- **META-4 (TBD):** Symlinks.
-- **META-5 (TBD):** Extended attributes, ACLs, macOS resource forks, Windows alternate data
-  streams.
+- **META-3 (MVP, proposed):** The executable bit and a read-only flag are synced and mapped per
+  platform. Other permissions, ownership, and ACLs are not synced.
+- **META-4 (MVP, proposed):** Symlinks, special files, and other products' cloud placeholders
+  are skipped with a warning.
+- **META-5 (MVP, proposed):** Extended attributes, alternate data streams, and resource forks are
+  not synced in v1. The format leaves room for an allow-listed set later.
 - **META-6 (MVP):** Names that are invalid or ambiguous on another platform (Windows reserved
   characters and names, case-only differences, Unicode normalization differences) are detected
   and handled predictably, never silently lost or overwritten.
@@ -205,6 +208,9 @@ Platforms arrive in this order: **Linux → Windows → macOS → Android** (see
 - **SEC-11 (MVP):** Recovery when every device is lost uses the user's offline root (modeled on
   the Deevnet Root of Trust: passphrase-encrypted keys on offline media). The root can issue
   a new device certificate *and* recover access to the data keys.
+- **SEC-12 (MVP):** FileSync has its **own** root CA, held offline by the user. It does not depend
+  on the Deevnet PKI or any Deevnet infrastructure. *(It may later be made subordinate to another
+  root, if the user wants a single trust anchor.)*
 - **SEC-8 (MVP):** Only well-established, audited cryptographic primitives and libraries are
   used. No home-grown cryptography.
 
@@ -245,12 +251,11 @@ Platforms arrive in this order: **Linux → Windows → macOS → Android** (see
 
 Topics that still need a deliberate discussion before they become requirements.
 
-1. **Metadata (META-3..6):** A deliberate, cross-platform decision for each kind of metadata.
+1. **Metadata (META-3..6):** Proposals are in the [Metadata Matrix](metadata/); its
+   "Decisions needed" list is still open.
 2. **Android storage model (AND-2):** Storage Access Framework versus app-specific directories,
    and what that means for the "no forced layout" principle.
 3. **PKI design (SEC-7, SEC-9..11):**
-   - Should FileSync have its own user-held root CA (a standalone product), or be issued under
-     the Deevnet PKI (e.g. a dedicated issuing CA under the Deevnet Root)?
    - How certificates bind to data encryption. Certificates prove identity and sign changes; the
      data keys are separately wrapped to each enrolled device's public key and to the offline
      recovery key.
