@@ -1,0 +1,24 @@
+baseURL = "https://deevnet.github.io/deevnet-filesync/"
+languageCode = "en-us"
+title = "Deevnet FileSync"
+theme = "hugo-book"
+
+enableGitInfo = true
+
+[params]
+  BookTitle = "Contents"
+  BookTheme = "auto"
+  BookToC = true
+  BookSearch = true
+  BookRepo = "https://github.com/deevnet/deevnet-filesync"
+  BookSection = "docs"
+  BookPortableLinks = true
+  description = "Deevnet FileSync: local-first, user-controlled personal file synchronization"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.tableOfContents]
+    startLevel = 1
+    endLevel = 4
