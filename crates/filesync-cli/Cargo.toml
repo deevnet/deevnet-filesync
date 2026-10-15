@@ -1,0 +1,19 @@
+[package]
+name = "filesync-cli"
+description = "Deevnet FileSync command-line interface"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "filesync"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+clap = { version = "4", features = ["derive"] }
+toml = "0.8"
+hex = "0.4"
+filesync-core = { path = "../filesync-core" }

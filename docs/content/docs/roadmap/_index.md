@@ -14,6 +14,7 @@ in each phase trace back to that page.
 | Phase | Name | Outcome | Status |
 |---|---|---|---|
 | 0 | Foundations | Requirements and design are settled; the repo is ready for code | 🔄 |
+| P | Prototype | A working end-to-end prototype on Linux against S3-compatible storage, to inform the Phase 0 design | 🔄 |
 | 1 | Encrypted hub on Linux | One Linux device round-trips encrypted roots to S3 | ⏳ |
 | 2 | Multi-device sync on Linux | Two or more Linux devices stay in sync unattended | ⏳ |
 | 3 | Data safety and v1.0 | Versions, trash, retention, restore. **Linux MVP release** | ⏳ |
@@ -47,6 +48,26 @@ Settle what to build and how, before writing code.
   publishing piece is done.)*
 
 **Exit:** the design documents are reviewed, and the Rust workspace builds in CI.
+
+## Phase P: Prototype
+
+Runs alongside Phase 0. Build the simplest thing that syncs, to learn what the design documents
+need to say. Prototype code may be reworked or replaced in Phase 1.
+
+- Rust workspace: a core library and a CLI.
+- Backend interface (BE-2) with two implementations: a local directory (for tests) and an
+  S3-compatible client, tested against MinIO, including Deevnet's MinIO.
+- End-to-end encryption of contents, names, and structure (SEC-1, SEC-2), with a single shared
+  hub key. **Prototype shortcut:** no PKI; the key file is copied between devices by hand.
+- Coordination through conditional writes (HUB-4): each change to a root is a new, numbered,
+  encrypted snapshot, created only if that number is still free.
+- Three-way sync with conflict copies (CONF-1, CONF-4), receive-only mounts (ROOT-9), portable
+  name checks (META-6), and a guard against mass deletion.
+- CLI: init, roots, mounts, status, sync (push), pull, history, restore (CLI-1, SYNC-4, SYNC-5,
+  VER-4).
+
+**Exit:** two devices (two config directories on one machine, then two machines) stay in sync
+through MinIO, and the findings are written up for the Phase 0 design.
 
 ## Phase 1: Encrypted hub on Linux
 
